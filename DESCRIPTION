@@ -1,0 +1,10 @@
+Package: lpNet
+Type: Package
+Title: Linear Programming Model for Network Inference
+Version: 0.99.0
+Date: 2013-01-11
+Author: Bettina Knapp, Johanna Mazur, Lars Kaderali
+Maintainer: Bettina Knapp <bettina.knapp@tu-dresden.de>
+Depends: lpSolve, nem
+Description: lpNet takes perturbation data as input and generates an LP model which allows the inference of signaling networks. For parameter identification either leave-one-out cross-validation or stratified n-fold cross-validation can be used. 
+License: Artistic License 2.0
