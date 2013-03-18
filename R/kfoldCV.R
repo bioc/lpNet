@@ -6,7 +6,7 @@ function(times,obs,n,b,K,delta,lambda,annot,annot_node,kfold,active_mu,active_sd
   obs_kfold <- list()
   num <- (dim(obs)[1]*dim(obs)[2])
   le <- ceiling(num/kfold)
-  sq_err_all <- vector()
+  sq_err_all <- edges_all <- vector()
   for(k in 1:times){
 	tmps <- sample(seq(1,kfold),kfold)
  	sq_err_tmp <- vector()
@@ -27,7 +27,6 @@ function(times,obs,n,b,K,delta,lambda,annot,annot_node,kfold,active_mu,active_sd
   #   mean(obs_kfold[[1]],na.rm=T)
 	## make crossvalidation
 	adja_sum <- adja_num <- matrix(0,ncol=n,nrow=n)
-	edges_all <- sq_err <- vector()
 	for(x in 1:kfold){
 	  test_ids <- seq(1,kfold)[-x]
 	  train_tmp <- vector()
