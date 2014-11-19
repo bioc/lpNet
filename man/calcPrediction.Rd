@@ -6,115 +6,146 @@
 Calculate Predicted Observation.
 }
 \description{
-Calculate the predicted observation of a perturbation experiment. If observations of an experiment are missing this function can be used to determine for a given network the predicted outcome. The missing measurement is predicted from two normal distributions, one for observations coming from active and one coming from inactive genes. 
+Calculate the predicted observation of a perturbation experiment. If observations of an experiment are missing this function can be used to determine for a given network the predicted outcome. The missing measurement is predicted from two normal distributions, one for observations coming from active and one coming from inactive genes. The state of the gene is predicted based on the states of its parents.
 }
 \usage{
-calcPredictionLOOCV(kds, adja, obs, delta, rem_kd, rem_gene, 
-  active_mu, active_sd, inactive_mu, inactive_sd)
-calcPredictionKfoldCV(adja, b, n, K, 
-  active_mu, active_sd, inactive_mu, inactive_sd)
+calcPredictionLOOCV(obs, delta, b, n ,K, adja, baseline, rem_gene, rem_k, rem_t=NULL, active_mu,
+                    active_sd, inactive_mu, inactive_sd, mu_type, flag_time_series=FALSE)
+calcPredictionKfoldCV(obs, delta, b, n, K, adja, baseline, rem_entries=NULL, rem_entries_vec=NULL,
+                      active_mu, active_sd, inactive_mu, inactive_sd, mu_type, flag_time_series=FALSE)
 }
+
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{kds}{
-  Matrix of 0/1 values representing the perturbation experiments (entry is 0 if gene is inactivated in the respective experiment and 1 otherwise). One column corresponds to one experiment and each row represents a gene.
-}
-  \item{adja}{
-Numeric matrix: the adjacency matrix of the given network.
-}
   \item{obs}{
-Numeric matrix: the observation matrix.
+Numeric matrix/array: the observation matrix/array. It can have up to 3 dimensions, where dimension 1 are the network nodes, dimension 2 are the perturbation experiments, and dimension 3 are the time points (if considered).
 }
   \item{delta}{
 Numeric vector defining the thresholds for each gene to determine its observation to be active or inactive.
 }
-  \item{rem_kd}{
-Integer: the index of the experiment which is missing.
-}
-  \item{rem_gene}{
-Integer: the index of the gene which is missing. Together with rem_kd, the two indices correspond to the observation of the gene rem_gene at experiment rem_kd.
-}
-  \item{active_mu}{
-Numeric: the average value assumed for observations coming from activated nodes. The parameter active_mu and active_sd are used for predicting the observations of the normal distribution of activate genes.
-}
-  \item{active_sd}{
-Numeric: the variation assumed for observations coming from activated nodes. The parameter active_mu and active_sd are used for predicting the observations of the normal distribution of activate genes.
-}
-  \item{inactive_mu}{
-Numeric: the average value assumed for observations coming from inactivated nodes. The parameter inactive_mu and inactive_sd are used for predicting the observations of the normal distribution of inactivate genes.
-}
-  \item{inactive_sd}{
-  Numeric: the variation assumed for observations coming from inactivated nodes. The parameter inactive_mu and inactive_sd are used for predicting the observations of the normal distribution of inactivate genes.
-}
   \item{b}{
-Vector of 0/1 values describing the experiments (entry is 0 if gene is inactivated in the respetive experiment and 1 otherwise). The measurements of the genes of each experiment are appended as a long vector.
+Binary vector representing the perturbation experiments (entry is 0 if gene is inactive in the respective experiment and 1 otherwise). 
 }
   \item{n}{
-Integer: number of genes.
+Number of genes in the observation matrix.  
 }
   \item{K}{
-Integer: number of perturbations experiments.
+Number of perturbation experiments.
+}
+  \item{adja}{
+Numeric matrix: the adjacency matrix of the given network.
+}
+  \item{baseline}{
+Vector containing the inferred baseline vectors of each gene.
+}
+  \item{rem_gene}{
+Integer: the index of the gene that is missing.
+}
+  \item{rem_k}{
+Integer: the index of the perturbation experiment that is missing.
+}
+  \item{rem_t}{
+Integer: the index of the time point that is missing.
+}
+  \item{rem_entries}{
+Numeric matrix: each row represents an entry that was removed from the observation matrix, while the 3 columns represent the gene, perturbation experiment and time point, respectively.
+}
+  \item{rem_entries_vec}{
+Numeric vector: contains the entries that were removed in an "absolute form", i.e., if entry (2,1,2) was removed, it will appear in this vector as simply 5.
+}
+  \item{active_mu}{
+Numeric: the average value assumed for observations coming from active nodes. The parameter active_mu and active_sd are used for predicting the observations of the normal distribution of activate genes. This parameter can be either a numeric, a vector, a matrix, or a 3D array, depending on the specified mu_type.
+}
+  \item{active_sd}{
+Numeric: the variation assumed for observations coming from active nodes. The parameter active_mu and active_sd are used for predicting the observations of the normal distribution of activate genes. This parameter can be either a numeric, a vector, a matrix, or a 3D array, depending on the specified mu_type.
+}
+  \item{inactive_mu}{
+Numeric: the average value assumed for observations coming from inactive nodes. The parameter inactive_mu and inactive_sd are used for predicting the observations of the normal distribution of inactivate genes. This parameter can be either a numeric, a vector, a matrix, or a 3D array, depending on the specified mu_type.
+}
+  \item{inactive_sd}{
+  Numeric: the variation assumed for observations coming from inactive nodes. The parameter inactive_mu and inactive_sd are used for predicting the observations of the normal distribution of inactivate genes. This parameter can be either a numeric, a vector, a matrix, or a 3D array, depending on the specified mu_type.
+}
+  \item{mu_type}{
+Character: can have the following values and meanings:
+\itemize{
+    \item "simple" - the value of active_mu/sd and inactive_mu/sd is independent of the gene/perturbation experiment/time point;
+    \item "perGene" - the value of active_mu/sd and inactive_mu/sd depends on the gene;
+    \item perGeneExp" - the value of active_mu/sd and inactive_mu/sd depends on the gene and perturbation experiment;
+    \item perGeneTime" - the value of active_mu/sd and inactive_mu/sd depends on the gene and time point;
+    \item "perGeneExpTime" - the value of active_mu/sd and inactive_mu/sd depends on the gene, perturbation experiment, and time point;
+  }
+}
+  \item{flag_time_series}{
+  Logical: specifies whether steady-state (FALSE) or time series data (TRUE) is used.  
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-Numeric: the predicted observation(s).
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
+
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{kfoldCV}}, \code{\link{loocv}}
+\code{\link{loocv}}, \code{\link{kfoldCV}}
 }
 \examples{
-n <- 5 # number of genes
-K <- 7 # number of experiments
+n <- 3 # number of genes
+K <- 4 # number of experiments
+T_ <- 4 # number of time points
 
 # perturbation vector, entry is 0 if gene is inactivated and 1 otherwise
-b <- c(0,1,1,1,1, # perturbation exp1: gene 1 perturbed, gene 2-5 unperturbed
-1,0,1,1,1,        # perturbation exp2: gene 2 perturbed, gene 1,3,4,5 unperturbed
-1,1,0,1,1,        # perturbation exp3....
-1,1,1,0,1,
-1,1,1,1,0,
-1,0,0,1,1,
-1,1,1,1,1)
-T_nw <- matrix(c(0,1,1,0,0,0,0,NA,-1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0),
-  nrow=n,ncol=n,byrow=TRUE)
+b <- c(0,1,1, # perturbation exp1: gene 1 perturbed, gene 2,3 unperturbed
+       1,0,1, # perturbation exp2: gene 2 perturbed, gene 1,3 unperturbed
+       1,1,0, # perturbation exp3....
+       1,1,1)
+
+# adjacency matrix       
+adja <- matrix(c(0,1,0,
+                 0,0,1,
+                 0,0,0), nrow=n, ncol=n, byrow=TRUE)
+
+# define node baseline values
+baseline <- c(0.75, 0, 0)
+
+# define delta value
+delta <- rep(0.75, n)
 
 # define the parameters for the observation generated from the normal distributions
+mu_type <- "single"
 active_mu <- 0.9
 inactive_mu <- 0.5
 active_sd <- inactive_sd <- 0.01
 
-# compute the predicted observation matrix for the "kfoldCV"
-calcPredictionKfoldCV(T_nw, b, n, K, active_mu, active_sd, inactive_mu, inactive_sd)
-
-#### LOOCV
-# perturbation experiments written as a matrix
-kds <- matrix(b,nrow=n,ncol=K)
+#### kfoldCV
 
 # generate random observation matrix
-obs <- matrix(rnorm(35),nrow=n,ncol=K)
-# define delta
-delta <- rep(0.75,5)
-# define the observation to be removed
-rem_kd <- 3
+obs <- array(rnorm(n*K*T_), c(n,K,T_))
+
+# define the observationd to be removed, whose values will be predicted
+obs[2,4,2] <- NA
+obs[3,4,3] <- NA
+
+rem_entries <- which(is.na(obs), arr.ind=TRUE)
+rem_entries_vec <- which(is.na(obs))
+
+# compute the predicted observation matrix for the "kfoldCV"
+calcPredictionKfoldCV(obs=obs, delta=delta, b=b, n=n, K=K, adja=adja, baseline=baseline, 
+                      rem_entries=rem_entries, rem_entries_vec=rem_entries_vec,
+                      active_mu=active_mu, active_sd=active_sd, inactive_mu=inactive_mu, 
+                      inactive_sd=inactive_sd, mu_type=mu_type, flag_time_series=TRUE)
+
+
+#### LOOCV
+# generate random observation matrix
+obs <- matrix(rnorm(n*K), nrow=n, ncol=K)
+
+# define the observationd to be removed
+rem_k <- 3
 rem_gene <- 2
-obs[rem_gene,rem_kd] <- NA
+obs[rem_gene, rem_k] <- NA
+
 # compute the predicted value
-calcPredictionLOOCV(kds, T_nw, obs, delta, rem_kd, rem_gene, 
-  active_mu, active_sd, inactive_mu, inactive_sd)
+calcPredictionLOOCV(obs=obs, delta=delta,b=b, n=n ,K=K, adja=adja, baseline=baseline, 
+                    rem_gene=rem_gene, rem_k=rem_k, active_mu=active_mu, active_sd=active_sd,
+                    inactive_mu=inactive_mu, inactive_sd=inactive_sd, mu_type=mu_type)
 
 }
 

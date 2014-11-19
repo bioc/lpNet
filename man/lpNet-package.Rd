@@ -6,7 +6,11 @@
 Network Inference Of Perturbation Data Using a Linear Programming Approach.
 }
 \description{
-lpNet takes perturbation data as input and generates an LP model which allows the inference of signaling networks. For parameter identification either leave-one-out cross-validation or stratified n-fold cross-validation can be used.
+lpNet aims at infering biological networks, in particular signaling and gene networks.
+For that it takes perturbation data, either steady-state or time-series, 
+as input and generates an LP model which allows the inference of signaling networks. 
+For parameter identification either leave-one-out cross-validation or 
+stratified n-fold cross-validation can be used.
 }
 \details{
 \tabular{ll}{
@@ -20,21 +24,17 @@ License: \tab Artistic License 2.0\cr
 %~~ functions ~~
 }
 \author{
-% B. Knapp, J. Mazur, L. Kaderali
-% Maintainer: bettina.knapp@tu-dresden.de
+B. Knapp, M. R. A. Matos, J. Mazur, L. Kaderali
+
+Maintainer: bettina.knapp@helmholtz-muenchen.de
 }
 \references{
-B. Knapp, RNA Interference Data: from a Statistical Analysis to Network Inference, PhD Thesis, 2012, \url{http://archiv.ub.uni-heidelberg.de/volltextserver/13322/}
+Bettina Knapp and Lars Kaderali, Reconstruction of cellular signal transduction networks using perturbation assays and linear programming, PLoS ONE, 2013.
+
+Marta R. A. Matos, Network inference : extension of linear programming model for time-series data, Master's thesis, Department of Informatics, University of Minho.
 %J. Mazur, D. Ritter, G. Reinelt, L. Kaderali, Reconstructing nonlinear dynamic models of gene regulation using stochastic sampling. BMC Bioinformatics, 10:448, 2009.
 }
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
 %~~ the R documentation directory ~~
 \keyword{ network inference }
 \keyword{linear programming approach}
-\seealso{
-%~~ Optional links to other man pages, e.g. ~~
-%~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-}
-\examples{
-%~~ simple examples of the most important functions ~~
-}

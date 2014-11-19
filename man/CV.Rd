@@ -9,20 +9,29 @@ Cross-validation
 Performs a stratified k-fold cross-validation or a Leave-One-Out cross-validation.
 }
 \usage{
-kfoldCV(times, obs, n, b, K, delta, lambda, annot, annot_node, kfold,
-  active_mu, active_sd, inactive_mu, inactive_sd,
-  prior = NULL, sourceNode = NULL, sinkNode = NULL, allint = FALSE, allpos = FALSE)
-loocv(times, obs, n, b, K, delta, lambda, annot, annot_node, 
-  active_mu, active_sd, inactive_mu, inactive_sd, 
-  prior = NULL, sourceNode = NULL, sinkNode = NULL, allint = FALSE, allpos = FALSE)
+loocv(kfold=NULL, times, obs, delta, lambda, b, n, K, T_=NULL, annot, annot_node, active_mu, active_sd, 
+  		inactive_mu, inactive_sd, mu_type, delta_type, prior=NULL, sourceNode=NULL, sinkNode=NULL, 
+			allint=FALSE, allpos=FALSE, flag_time_series=FALSE)
+kfoldCV(kfold, times, obs, delta, lambda, b, n, K, T_=NULL, annot, annot_node, active_mu,
+  			active_sd, inactive_mu, inactive_sd, mu_type, delta_type, prior=NULL,
+				sourceNode=NULL, sinkNode=NULL, allint=FALSE, allpos=FALSE, flag_time_series=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
+  \item{kfold}{
+Integer value of the number "k" in the k-fold cross-calidation.
+}
   \item{times}{
 Integer: the number of times the cross-validation shall be performed.
 }
   \item{obs}{
-Numeric matrix: the measured observations.
+Numeric matrix/array: the measured observation matrix/array. It can have up to 3 dimensions, where dimension 1 are the network nodes, dimension 2 are the perturbation experiments, and dimension 3 are the time points (if considered).
+}
+  \item{delta}{
+Numeric vector, matrix, or array defining the thresholds to determine an observation active or inactive.
+}
+  \item{lambda}{
+Numeric value defining the penalty parameter lambda. It can range from zero to infinity and it controls the introduction of slack variables in the network inference lp model. 
 }
   \item{n}{
 Integer: number of genes.
@@ -33,11 +42,8 @@ Vector of 0/1 values describing the experiments (entry is 0 if gene is inactivat
   \item{K}{
 Integer: number of perturbation experiments.
 }
-  \item{delta}{
-Numeric vector defining the thresholds to determine an observation active or inactive.
-}
-  \item{lambda}{
-Numeric value defining the penalty parameter lambda. It can range from zero to infinity and it controls the introduction of slack variables in the network inference lp model. 
+  \item{T_}{
+Integer: number of time points in time-series data.
 }
   \item{annot}{
 Vector of character strings: the annotation of the edges as returned by "getEdgeAnnot".
@@ -45,20 +51,36 @@ Vector of character strings: the annotation of the edges as returned by "getEdge
   \item{annot_node}{
 Vector of character strings: the annoation of the nodes.
 }
-  \item{kfold}{
-Integer value of the number "k" in the k-fold cross-calidation.
-}
   \item{active_mu}{
-Numeric: the average value assumed for observations coming from activated nodes. The parameter active_mu and active_sd are used for predicting the observations of the normal distribution of activate genes.
+Numeric: the average value assumed for observations coming from activated nodes. The parameter active_mu and active_sd are used for predicting the observations of the normal distribution of activate genes. This parameter can be either a numeric, a vector, a matrix, or a 3D array, depending on the specified mu_type.
 }
   \item{active_sd}{
-Numeric: the variation assumed for observations coming from activated nodes. The parameter active_mu and active_sd are used for predicting the observations of the normal distribution of activate genes.
+Numeric: the variation assumed for observations coming from activated nodes. The parameter active_mu and active_sd are used for predicting the observations of the normal distribution of activate genes. This parameter can be either a numeric, a vector, a matrix, or a 3D array, depending on the specified mu_type.
 }
   \item{inactive_mu}{
-Numeric: the average value assumed for observations coming from inactivated nodes. The parameter inactive_mu and inactive_sd are used for predicting the observations of the normal distribution of inactivate genes.
+Numeric: the average value assumed for observations coming from inactivated nodes. The parameter inactive_mu and inactive_sd are used for predicting the observations of the normal distribution of inactivate genes. This parameter can be either a numeric, a vector, a matrix, or a 3D array, depending on the specified mu_type.
 }
   \item{inactive_sd}{
-  Numeric: the variation assumed for observations coming from inactivated nodes. The parameter inactive_mu and inactive_sd are used for predicting the observations of the normal distribution of inactivate genes.
+  Numeric: the variation assumed for observations coming from inactivated nodes. The parameter inactive_mu and inactive_sd are used for predicting the observations of the normal distribution of inactivate genes. This parameter can be either a numeric, a vector, a matrix, or a 3D array, depending on the specified mu_type.
+}
+  \item{mu_type}{
+Character: can have the following values and meanings:
+\itemize{
+    \item "simple" - the value of active_mu/sd and inactive_mu/sd is independent of the gene/perturbation experiment/time point;
+    \item "perGene" - the value of active_mu/sd and inactive_mu/sd depends on the gene;
+    \item perGeneExp" - the value of active_mu/sd and inactive_mu/sd depends on the gene and perturbation experiment;
+    \item perGeneTime" - the value of active_mu/sd and inactive_mu/sd depends on the gene and time point;
+    \item "perGeneExpTime" - the value of active_mu/sd and inactive_mu/sd depends on the gene, perturbation experiment, and time point;
+  }
+}
+  \item{delta_type}{
+Character: can have the following values and meanings:
+\itemize{
+    \item "perGene" - the value of delta depends on the gene;
+    \item "perGeneExp" - the value of delta depends on the gene and perturbation experiment;
+    \item "perGeneTime" - the value of delta depends on the gene and time point;
+    \item "perGeneExpTime" - the value of delta depends on the gene, perturbation experiment, and time point;
+  }
 }
   \item{prior}{
 Prior knowledge, given as a list of constraints. Each constraint consists of a vector with four entries describing the prior knowledge of one edge. For example the edge between node 1 and 2, called w+_1_2, is defined to be bigger than 1 with constraint c("w+_1_2",1,">",2). The first entry specifies the annotation of the edge (see function "getEdgeAnnot") and the second defines the coefficient of the objective function (see parameter "objective.in" in the "lp" function of the package "lpSolve"). Furthermore, the third, respectively the fourth elements give the direction, respectively the right-hand side of the constraint (see the parameters "const.dir", respectively "const.rhs" in the "lp" function of the package "lpSolve").
@@ -75,73 +97,70 @@ Logical: should all variables be integer? Corresponds to an Integer Linear Progr
   \item{allpos}{
 Logical: should all variables be positive? Corresponds to learning only activating edges. Default: FALSE.
 }
+  \item{flag_time_series}{
+  Logical: specifies whether steady-state (FALSE) or time series data (TRUE) is used.  
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
 }
+
 \value{
 A list of 
  \item{MSE }{The mean squared error (MSE) of predicted and observed measurements of the corresponding cross-validation step.}
  \item{edges_all }{The learned edge weights for each cross-validation step.}
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
+ \item{baseline_all }{The learned baseline weights for each cross-validation step.}
+ }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
-annot_node <- seq(1,5)
-n <- 5 # number of genes
-K <- 7 # number of perturbation experiments
+n <- 3 # number of genes
+K <- 4 # number of experiments
+T_ <- 4 # number of time points
 
+annot_node <- seq(1, n)
 annot <- getEdgeAnnot(n)
 
-# activation (knockdown) vector (entry is 0 if gene is inactivated in the respetive experiment)
-b <- c(0,1,1,1,1,
-1,0,1,1,1,
-1,1,0,1,1,
-1,1,1,0,1,
-1,1,1,1,0,
-1,0,0,1,1,
-1,1,1,1,1)
+# generate random observation matrix
+obs <- array(rnorm(n*K*T_), c(n,K,T_))
 
-T_nw <- matrix(c(0,1,1,0,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0),nrow=n,ncol=n,byrow=TRUE)
+baseline <- c(0.75, 0, 0)
+
+# define delta 
+delta <- apply(obs, 1, mean, na.rm=TRUE)
+
+# perturbation vector, entry is 0 if gene is inactivated and 1 otherwise
+b <- c(0,1,1, # perturbation exp1: gene 1 perturbed, gene 2,3 unperturbed
+       1,0,1, # perturbation exp2: gene 2 perturbed, gene 1,3 unperturbed
+       1,1,0, # perturbation exp3....
+       1,1,1)
+       
+T_nw <- matrix(c(0,1,0,
+                 0,0,1,
+                 0,0,0), nrow=n, ncol=n, byrow=TRUE)
 colnames(T_nw) <- rownames(T_nw) <- annot_node
 
 ## calculate observation matrix with given parameters for the 
 # Gaussian distributions for activation and deactivation
 active_mu <- 0.95
 inactive_mu <- 0.56
-active_sd <- 0.1
-inactive_sd <- 0.1
-# use three replicates
-replnum <- 3
-
-# generation of random observation matrix
-obs <- matrix(rnorm(35),nrow=n,ncol=K)
+active_sd <- inactive_sd <- 0.1
 
 times <- kfold <- 10   # can be increased i.e. to 1000 to produce stable results
 
-# define delta 
-delta <- apply(obs,1,mean,na.rm=TRUE)
+mu_type <- "single"
+delta_type <- "perGene"
+
+lambda <- 1/10
+
 
 #### LOOCV
-loocv_res <- loocv(times,obs,n,b,K,delta,lambda=1,annot,annot_node,
-  active_mu,active_sd,inactive_mu,inactive_sd)
+loocv(kfold=NULL, times=times, obs=obs, delta=delta, lambda=lambda, b=b, n=n, K=K, T_=T_, annot=annot,
+      annot_node=annot_node, active_mu=active_mu, active_sd=active_sd, inactive_mu=inactive_mu,
+      inactive_sd=inactive_sd, mu_type=mu_type, delta_type=delta_type, prior=NULL, sourceNode=NULL,
+      sinkNode=NULL, allint=FALSE, allpos=FALSE, flag_time_series=TRUE)
 
 #### K-fold CV
-kcv_res <- kfoldCV(times,obs,n,b,K,delta,lambda=1,annot,annot_node,kfold,
-  active_mu,active_sd,inactive_mu,inactive_sd)
+kfoldCV(kfold=kfold, times=times, obs=obs, delta=delta, lambda=lambda, b=b, n=n, K=K, T_=T_, annot=annot,
+        annot_node=annot_node, active_mu=active_mu, active_sd=active_sd, inactive_mu=inactive_mu,
+        inactive_sd=inactive_sd, mu_type=mu_type, delta_type=delta_type, prior=NULL, sourceNode=NULL,
+        sinkNode=NULL, allint=FALSE, allpos=FALSE, flag_time_series=TRUE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

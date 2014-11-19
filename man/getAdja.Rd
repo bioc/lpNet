@@ -8,57 +8,57 @@ Get Adjacency Matrix.
 The function returns the adjacency matrix of the network computed with the "doILP" function.
 }
 \usage{
-getAdja(result, numnodes)
+getAdja(res, n, annot=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{result}{
+  \item{res}{
 Result returned by the "doILP" function.
 }
-  \item{numnodes}{
+  \item{n}{
 Integer: the number of nodes of the inferred network.
 }
+  \item{annot}{
+Vector of character strings: the annotation of the edges as returned by "getEdgeAnnot".
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
 }
+
 \value{
 Numeric matrix: the adjacency matrix of the network.
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 \code{\link{doILP}}
 }
 \examples{
-# generate random observation matrix with 5 experiments and 5 genes
-obs <- matrix(rnorm(5*5,1,0.1),nrow=5,ncol=5)
-# define the perturbations
-b <- c(0,1,1,1,1,
-1,0,1,1,1,
-1,1,0,1,1,
-1,1,1,0,1)
-n <- 5 # number of genes
-K <- 4 # number of knockdowns
-# annotation of the edges
+n <- 3 # number of genes
+K <- 4 # number of experiments
+T_ <- 4 # number of time points
+
+# generate random observation matrix
+obs <- array(rnorm(n*K*T_), c(n,K,T_))
+
+baseline <- c(0.75, 0, 0)
+
+delta <- rep(0.75, n)
+
+# perturbation vector, entry is 0 if gene is inactivated and 1 otherwise
+b <- c(0,1,1, # perturbation exp1: gene 1 perturbed, gene 2,3 unperturbed
+       1,0,1, # perturbation exp2: gene 2 perturbed, gene 1,3 unperturbed
+       1,1,0, # perturbation exp3....
+       1,1,1)
+            
+delta_type <- "perGene"
+lambda <- 1/10
 annot <- getEdgeAnnot(n)
-# define delta
-delta <- rep(1,5)
-# infer the network
-res <- doILP(obs,delta,lambda=1,b,n,K,annot)
+
+#infer the network
+res <- doILP(obs, delta, lambda, b, n, K, T_, annot, delta_type, prior=NULL,
+             sourceNode=NULL, sinkNode=NULL, all.int=FALSE, all.pos=FALSE, flag_time_series=TRUE)
 
 # make the adjacency matrix
-adja <- getAdja(res,n)
+adja <- getAdja(res, n)
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
