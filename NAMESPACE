@@ -1,4 +1,3 @@
 exportPattern("^[^\\.]")
-exportPattern("^[^\\.]")
 exportPattern("^[[:alpha:]]+")
 import(lpSolve,nem)
