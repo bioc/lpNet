@@ -19,230 +19,457 @@
   bvec <- rep(0, nConstr)
   J <- seq(1,n)
   count <- 1
-	
-	lp_problem_data <- list(W=W, bvec=bvec, f.dir=f.dir, count=count)
-  if (delta_type == "perGene") {
-		
+  
+  if(delta_type == "perGene"){
+  
 		if (all.int)
 			delta <- rep(1, n)
+		
+		for (t in 2:T_) {
+			for (k in 1:K) {
+				for (i in 1:n) {
+					
+					if (b[(k-1)*n + i] == 1) {  # if the entry in b is 1 then the gene is active
+						if (!is.na(obs[i,k,t])) {  # if the observation=NA, just do nothing
+							
+							if (obs[i,k,t] >= delta[i]) {  # if observation of gene i after knockdown k is active
+								if (all.pos) {
+									W[count,i+(n*n)] <- 1  # set offset parameter (baseline of gene i)
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+										}
+									}
+								}
+								
+								else {
+									W[count,i+(2*n*n)] <- 1
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										idNeg <- which(annot == paste("w-", j, i, sep="_"))  # negative parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+												W[count,idNeg] <- -obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+												W[count,idNeg] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+											W[count,idNeg] <- NA
+										}
+									} 
+								}
+								f.dir[count] <- ">="
+								bvec[count] <- delta[i]
+							}
+							
+							if (obs[i,k,t]< delta[i]) {  # if observation of gene i after knockdown k is NOT acitve
+								if (all.pos) {
+									W[count,i+(n*n)] <- 1  # set offset parameter (baseline of gene i)
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+										}
+									}
+								}
+								else {
+									W[count,i+(2*n*n)] <- 1
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										idNeg <- which(annot == paste("w-", j, i, sep="_"))  # negative parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+												W[count,idNeg] <- -obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+												W[count,idNeg] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+											W[count,idNeg] <- NA
+										}
+									}
+								}
+							f.dir[count] <- "<="
+							bvec[count] <- 0
+							}
+						}
+					}
+					count <- count+1
+				} # end i
+			} # end k
+		} # end t
+	}
+	else if (delta_type == "perGeneExp") {
+  
+		if(all.int)
+			delta <- matrix(rep(1,n*K), nrow=n, ncol=K)
 			
 		for (t in 2:T_) {
 			for (k in 1:K) {
 				for (i in 1:n) {
-					delta_i <- delta[i]
-					lp_problem_data <- .loopThroughMatrix_ts(lp_problem_data, delta_type, i, k, t, n, 
-																													obs, b, delta, delta_i, annot, J, all.pos)
-				} 
-			}
-		} 
+					
+					if (b[(k-1)*n + i] == 1) {  # if the entry in b is 1 then the gene is active
+						if (!is.na(obs[i,k,t])) {  # if the observation=NA, just do nothing
+							
+							if (obs[i,k,t] >= delta[i,k]) {  # if observation of gene i after knockdown k is active
+								if (all.pos) {
+									W[count,i+(n*n)] <- 1  # set offset parameter (baseline of gene i)
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,k] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+										}
+									}
+								}
+								else {
+									W[count,i+(2*n*n)] <- 1
+									for (j in J[J!=i]) {
+										idPos <- which(annot == paste("w+", j, i, sep="_"))
+										idNeg <- which(annot == paste("w-", j, i, sep="_"))
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,k] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+												W[count,idNeg] <- -obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+												W[count,idNeg] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+											W[count,idNeg] <- NA
+										}
+									} 
+								}
+								f.dir[count] <- ">="
+								bvec[count] <- delta[i,k]
+							}
+							
+							if (obs[i,k,t]< delta[i,k]) {  # if observation of gene i after knockdown k is NOT acitve
+								if (all.pos) {  # set offset parameter (baseline of gene i)
+									W[count,i+(n*n)] <- 1
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,k] & b[(k-1)*n + j] == 1){
+												W[count,idPos] <- obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+										}
+									}
+								}
+								else {
+									W[count,i+(2*n*n)] <- 1
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										idNeg <- which(annot == paste("w-", j, i, sep="_"))  # negative parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,k] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+												W[count,idNeg] <- -obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+												W[count,idNeg] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+											W[count,idNeg] <- NA
+										}
+									}
+								}
+							f.dir[count] <- "<="
+							bvec[count] <- 0
+							}
+						}
+					}
+					count <- count + 1
+				} # end i
+			} # end k
+		} # end t
 	}
-	else if (delta_type == "perGeneExp") {
+	else if (delta_type == "perGeneTime"){
   
 		if (all.int)
-			delta <- matrix(rep(1, n*K), nrow=n, ncol=K)
-		
+			delta <- matrix(rep(1,n*T_), nrow=n, ncol=T_)
+			
 		for (t in 2:T_) {
 			for (k in 1:K) {
 				for (i in 1:n) {
-					delta_i <- delta[i,k]
-					lp_problem_data <- .loopThroughMatrix_ts(lp_problem_data, delta_type, i, k, t, n, 
-																													obs, b, delta, delta_i, annot, J, all.pos)
-				} 
-			} 
-		} 
-	}
-	else if (delta_type == "perGeneTime") {
-  
-		if (all.int)
-			delta <- matrix(rep(1, n*T_), nrow=n, ncol=T_)
-		
-		for (t in 2:T_) {
-			for (k in 1:K) {
-				for (i in 1:n) {
-					delta_i <- delta[i,t]
-					lp_problem_data <- .loopThroughMatrix_ts(lp_problem_data, delta_type, i, k, t, n, 
-																													obs, b, delta, delta_i, annot, J, all.pos)
-				} 
-			} 
-		}
+					
+					if (b[(k-1)*n + i] == 1) {  # if the entry in b is 1 then the gene is active
+						if (!is.na(obs[i,k,t])) {  # if the observation=NA, just do nothing
+							
+							if (obs[i,k,t] >= delta[i,t]) {  # if observation of gene i after knockdown k is active
+								if (all.pos) {
+									W[count,i+(n*n)] <- 1  # set offset parameter (baseline of gene i)
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,t-1] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+										}
+									}
+								}
+								else {
+									W[count,i+(2*n*n)] <- 1
+									for (j in J[J!=i]) {
+										idPos <- which(annot == paste("w+", j, i, sep="_"))
+										idNeg <- which(annot == paste("w-", j, i, sep="_"))
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if(obs[j,k,t-1] >= delta[j,t-1] & b[(k-1)*n + j] == 1){
+												W[count,idPos] <- obs[j,k,t-1]
+												W[count,idNeg] <- -obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+												W[count,idNeg] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+											W[count,idNeg] <- NA
+										}
+									} 
+								}
+								f.dir[count] <- ">="
+								bvec[count] <- delta[i,t]
+							}
+							
+							if (obs[i,k,t] < delta[i,t]) {  # if observation of gene i after knockdown k is NOT acitve
+								if (all.pos) {
+									W[count,i+(n*n)] <- 1  # set offset parameter (baseline of gene i)
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,t-1] & b[(k-1)*n + j] == 1){
+												W[count,idPos] <- obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+										}
+									}
+								}
+								else {
+									W[count,i+(2*n*n)] <- 1
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										idNeg <- which(annot == paste("w-", j, i, sep="_"))  # negative parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,t-1] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+												W[count,idNeg] <- -obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+												W[count,idNeg] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+											W[count,idNeg] <- NA
+										}
+									}
+								}
+							f.dir[count] <- "<="
+							bvec[count] <- 0
+							}
+						}
+					}
+					count <- count+1
+				} # end i
+			} # end k
+		} # end t
 	}
 	else if (delta_type == "perGeneExpTime") {
   
 		if (all.int)
-			delta <- array(rep(1, n*K*T_), c(n,K,T_))
+			delta <- array(rep(1,n*K*T_), c(n,K,T_))
 		
 		for (t in 2:T_) {
 			for (k in 1:K) {
 				for (i in 1:n) {
-					delta_i <- delta[i,k,t]
-					lp_problem_data <- .loopThroughMatrix_ts(lp_problem_data, delta_type, i, k, t, n, 
-																													obs, b, delta, delta_i, annot, J, all.pos)
-				}
-			} 
-		} 
-	}
-  
-  
-	lp_problem_data <- .setSlackVariables_ts(lp_problem_data, n, nConstr, lambda, annot,all.pos)
-	lp_problem_data <- .setPriors_ts(lp_problem_data, delta, n, annot, sourceNode, sinkNode, prior, all.pos)
-	
-  W <- lp_problem_data$W
-  bvec <- lp_problem_data$bvec
-  f.dir <- lp_problem_data$f.dir
-  cvec <- lp_problem_data$cvec
-
-  ## Maximize the gross margin
-  res <- lp("min",cvec,W,f.dir,bvec,all.int=all.int) 
-  ## min - direction of optimization
-  ## cvec - objective function (Numeric vector of coefficients of objective function)
-  ## W - Matrix of numeric constraint coefficients, one row per constraint, one column per variable
-  ## f.dir vector of character strings giving the direction of the constraint
-  ## bvec - vector of numeric values for the right-hand sides of the constraints
-
-  return(res)
-}
-
-
-.loopThroughMatrix_ts <- function(lp_problem_data, delta_type, i, k, t, n, obs, 
-																				 b, delta, delta_i, annot, J, all.pos) {
-
-	bvec <- lp_problem_data$bvec
-	f.dir <- lp_problem_data$f.dir
-	count <- lp_problem_data$count
-	
-	if (b[(k-1)*n + i] == 1) {  # if the entry in b is 1 then the gene is active
-		if (!is.na(obs[i,k,t])) {  # if the observation=NA, just do nothing
-			
-			if (obs[i,k,t]>= delta_i) {  # if observation of gene i after knockdown k is active
-				if (all.pos) {  # set offset parameter (baseline of gene i)
-					lp_problem_data$W[count, i+(n*n)] <- 1
 					
-					for (j in J[J != i]) {  # sum
-						delta_j <- .setDeltaValue_ts(delta_type, delta, j, k, t)
-						lp_problem_data <- .setPosMatrixEntries_ts(lp_problem_data, i, j, k, t, n, obs, b, delta_j, annot) 
+					if (b[(k-1)*n + i] == 1) {  # if the entry in b is 1 then the gene is active
+						if (!is.na(obs[i,k,t])) {  # if the observation=NA, just do nothing
+							
+							if (obs[i,k,t] >= delta[i,k,t]) {  # if observation of gene i after knockdown k is active
+								if (all.pos) {
+									W[count,i+(n*n)] <- 1  # set offset parameter (baseline of gene i)
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,k,t-1] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+										}
+									}
+								}
+								else {
+									W[count,i+(2*n*n)] <- 1
+									for (j in J[J!=i]) {
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										idNeg <- which(annot == paste("w-", j, i, sep="_"))  # negative parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,k,t-1] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+												W[count,idNeg] <- -obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+												W[count,idNeg] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+											W[count,idNeg] <- NA
+										}
+									} 
+								}
+								f.dir[count] <- ">="
+								bvec[count] <- delta[i,k,t]
+							}
+							
+							if (obs[i,k,t] < delta[i,k,t]) {  # if observation of gene i after knockdown k is NOT acitve
+								if (all.pos) {
+									W[count,i+(n*n)] <- 1  # set offset parameter (baseline of gene i)
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot == paste("w+", j, i, sep="_"))  # positive parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,k,t-1] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+										}
+									}
+								}
+								else {
+									W[count,i+(2*n*n)] <- 1
+									
+									for (j in J[J!=i]) {  # sum
+										idPos <- which(annot==paste("w+",j,i,sep="_"))  # positive parameter
+										idNeg <- which(annot==paste("w-",j,i,sep="_"))  # negative parameter
+										
+										if (!is.na(obs[j,k,t-1])) {
+											if (obs[j,k,t-1] >= delta[j,k,t-1] & b[(k-1)*n + j] == 1) {
+												W[count,idPos] <- obs[j,k,t-1]
+												W[count,idNeg] <- -obs[j,k,t-1]
+											}
+											else {
+												W[count,idPos] <- 0
+												W[count,idNeg] <- 0
+											}
+										}
+										else {
+											W[count,idPos] <- NA
+											W[count,idNeg] <- NA
+										}
+									}
+								}
+							f.dir[count] <- "<="
+							bvec[count] <- 0
+							}
+						}
 					}
-				}
-				else {
-					lp_problem_data$W[count,i+(2*n*n)] <- 1
-					for (j in J[J != i]) {  # sum
-						delta_j <- .setDeltaValue_ts(delta_type, delta, j, k, t)
-						lp_problem_data <- .setPosNegMatrixEntries_ts(lp_problem_data, i, j, k, t, n, obs, b, delta_j, annot)
-					} 
-				}
-				f.dir[count] <- ">="
-				bvec[count] <- delta_i
-			}
-			
-			if (obs[i,k,t] < delta_i) {  # if observation of gene i after knockdown k is NOT active
-				if (all.pos) {
-					lp_problem_data$W[count,i+(n*n)] <- 1  # set offset parameter (baseline of gene i)
-					
-					for (j in J[J != i]) {  # sum
-						delta_j <- .setDeltaValue_ts(delta_type, delta, j, k, t)
-						lp_problem_data <- .setPosMatrixEntries_ts(lp_problem_data, i, j, k, t, n, obs, b, delta_j, annot) 
-					}
-				}
-				else {
-					lp_problem_data$W[count,i+(2*n*n)] <- 1
-					for (j in J[J != i]) {  # sum
-							delta_j <- .setDeltaValue_ts(delta_type, delta, j, k, t)
-							lp_problem_data <- .setPosNegMatrixEntries_ts(lp_problem_data, i, j, k, t, n, obs, b, delta_j, annot)
-					}
-				}
-			f.dir[count] <- "<="
-			bvec[count] <- 0
-			}
-		}
-	}
-	count <- count+1
-	
-	lp_problem_data$bvec <- bvec
-	lp_problem_data$f.dir <- f.dir
-	lp_problem_data$count <- count
-	
-	return(lp_problem_data)
-}
-
-
-.setDeltaValue_ts <- function(delta_type, delta, j, k, t) {
-	
-	if (delta_type == "perGene") {
-		delta_j <- delta[j]
-	}
-	else if (delta_type == "perGeneExp") {
-		delta_j <- delta[j,k]
-	}
-	else if (delta_type == "perGeneTime") {
-		delta_j <- delta[j,t-1]
-	}
-	else if (delta_type == "perGeneExpTime") {
-		delta_j <- delta[j,k,t-1]
-	}
-	
-	return(delta_j)
-}
-
-
-.setPosMatrixEntries_ts <- function(lp_problem_data, i, j, k, t, n, obs, b, delta_j, annot) {
-
-	W <- lp_problem_data$W
-	count <- lp_problem_data$count
-	
-	idPos <- which(annot == paste("w+", j, i, sep="_"))
-	if (!is.na(obs[j,k,t-1])) {
-		if ((obs[j,k,t-1] >= delta_j) & (b[(k-1)*n + j] == 1)){
-			W[count,idPos] <- obs[j,k,t-1]
-		}
-		else {
-			W[count,idPos] <- 0
-		}
-	}
-	else {
-		W[count,idPos] <- NA
-	}
-	
-	lp_problem_data$W <- W
-	
-	return(lp_problem_data)
-}
-
-
-.setPosNegMatrixEntries_ts <- function(lp_problem_data, i, j, k, t, n, obs, b, delta_j, annot) {
-
-	W <- lp_problem_data$W
-	count <- lp_problem_data$count
-	
-	#	 positive parameter
-	idPos <- which(annot == paste("w+", j, i, sep="_"))
-	idNeg <- which(annot == paste("w-", j, i, sep="_"))
-	
-	if (!is.na(obs[j,k,t-1])) {
-		if ((obs[j,k,t-1] >= delta_j) & (b[(k-1)*n + j] == 1)){
-			W[count,idPos] <- obs[j,k,t-1]
-			W[count,idNeg] <- -obs[j,k,t-1]
-		}
-		else{
-			W[count,idPos] <- 0
-			W[count,idNeg] <- 0
-		}
-	}
-	else{
-		W[count,idPos] <- NA
-		W[count,idNeg] <- NA
+					count <- count+1
+				} # end i
+			} # end k
+		} # end t
 	}
 
-	lp_problem_data$W <- W
-	
-	return(lp_problem_data)
-}
-
-
-.setSlackVariables_ts <- function(lp_problem_data, n, nConstr, lambda, annot, all.pos){
-
-	W <- lp_problem_data$W
-	f.dir <- lp_problem_data$f.dir
-
-	if (lambda != 0) {
+  
+  # now add slack varibles to W: 
+  if (lambda != 0) {
 		sl <- matrix(0, nrow=nConstr, ncol=nConstr)
 		annot_s <- paste("s",seq(1, nConstr), sep="_")
 		colnames(sl) <- annot_s
@@ -288,22 +515,7 @@
 		names(cvec) <- c(annot)
   }
 
-  lp_problem_data$W <- W
-	lp_problem_data$f.dir <- f.dir
-	lp_problem_data$cvec <- cvec
-	
-	return(lp_problem_data)
-}
-
-
-.setPriors_ts <- function(lp_problem_data, delta, n, annot, sourceNode, sinkNode, prior, all.pos){
-
-	W <- lp_problem_data$W
-	bvec <- lp_problem_data$bvec
-	f.dir <- lp_problem_data$f.dir
-	cvec <- lp_problem_data$cvec
-	
-  ## condition that each node which is not End hast at least delta[i] outgoing edges
+  # condition that each node which is not End hast at least delta[i] outgoing edges
   if (!is.null(sinkNode)) {
 		W_tmp1 <- vector()
 		gene_tmp <- seq(1, n)[-sinkNode]
@@ -333,7 +545,7 @@
 		W <- rbind(W, W_tmp1)
   }
   
-  ## conditions that each node which is not Start has at least delta[i] incoming edges
+  # conditions that each node which is not Start has at least delta[i] incoming edges
   if (!is.null(sourceNode)) {
 		W_tmp2 <- vector()
 		gene_tmp <- seq(1, n)[-sourceNode]
@@ -372,12 +584,14 @@
 			f.dir <- c(f.dir, prior[[i]][3])
 		}
   }
-  
-  lp_problem_data$W <- W
-	lp_problem_data$bvec <- bvec
-	lp_problem_data$f.dir <- f.dir
-	
-	return(lp_problem_data)
+
+  # Maximize the gross margin
+  # min - direction of optimization
+  # cvec - objective function (Numeric vector of coefficients of objective function)
+  # W - Matrix of numeric constraint coefficients, one row per constraint, one column per variable
+  # f.dir vector of character strings giving the direction of the constraint
+  # bvec - vector of numeric values for the right-hand sides of the constraints
+  res <- lp("min", cvec, W, f.dir, bvec, all.int=all.int) 
+
+  return(res)
 }
-
-
