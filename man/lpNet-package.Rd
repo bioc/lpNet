@@ -16,7 +16,7 @@ stratified n-fold cross-validation can be used.
 \tabular{ll}{
 Package: \tab lpNet\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
+Version: \tab 1.99.2\cr
 Date: \tab 2013-01-11\cr
 License: \tab Artistic License 2.0\cr
 }

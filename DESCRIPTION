@@ -1,8 +1,8 @@
 Package: lpNet
 Type: Package
 Title: Linear Programming Model for Network Inference
-Version: 1.99.1
-Date: 2014-12-17
+Version: 1.99.2
+Date: 2014-09-24
 Author: Bettina Knapp, Marta R. A. Matos, Johanna Mazur, Lars Kaderali
 Maintainer: Bettina Knapp <bettina.knapp@tu-dresden.de>
 Depends: lpSolve, nem
@@ -13,4 +13,4 @@ Description: lpNet aims at infering biological networks, in particular signaling
 						 stratified n-fold cross-validation can be used.
 License: Artistic License 2.0
 biocViews: NetworkInference
-Packaged: 2014-12-17
+Packaged: 2015-03-29 19:57:38 UTC; dx

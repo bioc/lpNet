@@ -143,13 +143,13 @@ To restrict the range of possible lambda the function ``calcRangeLambda" can be 
 <<rangeLambda, results=hide>>=
 lambda <- calcRangeLambda(obs, delta, delta_type)
 MSE <- Inf
-for(lamd in lambda){
+for (lamd in lambda) {
   loocv_res <- loocv(kfold=NULL, times, obs, delta, lambda=lamd, 
                      b, n, K, T_=NULL, annot=getEdgeAnnot(n), 
                      annot_node, active_mu, active_sd, 
                      inactive_mu, inactive_sd, mu_type, 
                      delta_type)
-  if(loocv_res$MSE<MSE){
+  if (loocv_res$MSE < MSE) {
 		MSE <- loocv_res$MSE
 		edges_all <- loocv_res$edges_all
 		bestLambda <- lamd
@@ -165,13 +165,13 @@ Instead of using LOOCV a k-fold cross-validation can be used to compute the $\la
 <<foldcv, results=hide>>=
 kfold <- 5
 MSE <- Inf
-for(lamd in lambda){
+for (lamd in lambda) {
   kcv_res <- kfoldCV(kfold, times, obs, delta, lambda=lamd, 
                      b, n, K, T_=NULL, annot=getEdgeAnnot(n),
                      annot_node, active_mu, active_sd, 
                      inactive_mu, inactive_sd, mu_type, 
                      delta_type)
-  if(kcv_res$MSE<MSE){
+  if (kcv_res$MSE < MSE) {
 		MSE <- kcv_res$MSE
 		edges_all <- kcv_res$edges_all
 		bestLambda <- lamd
@@ -192,7 +192,7 @@ res3 <- doILP(obs, delta, lambda=1, b, n, K, T_=NULL,
 adja3 <- getAdja(res3,n)
 @
 
-Similary, additional constraints defining prior knowledge of individual edges can be formulated and added as a list to the ``doILP" function. 
+Similary, additional constraints defining prior knowledge on individual edges can be formulated and added as a list to the ``doILP" function. 
 The prior of each individual edge consists of a vector of four elements with the first element being the annotation of the edge (see function ``getEdgeAnnot") and the second being the coefficient of the objective function. The third, respectively the fourth elements correspond to the direction, respectively the right-hand side of the constraint.
 For example, assume that we know that the edge weight between node 1 and node 2 ($w_{12}^+$) is greater than 1, it is defined as follows:
 <<prior2, results=hide>>=
@@ -203,7 +203,7 @@ res4 <- doILP(obs,delta, lambda=1, b, n, K, T_=NULL,
 adja4 <- getAdja(res4, n)
 @
 
-The prior knowledge can be extracted from databases such as KEGG or Reactome. Using, for example, the ``KEGGgraph'' package \cite{kegggraph} in combination with lpNet allows to import already known activations or deactivations between two genes. Thus, this information can be used to define the positive ($w^+$), respectively, the negative weight ($w^-$) of the corresponding edges to be bigger than 1 in the prior constraints of the LP method. \\
+The prior knowledge can be extracted from databases such as KEGG or Reactome. Using, for example, the ``KEGGgraph'' package \cite{kegggraph} in combination with lpNet allows to import already known activations or deactivations between two genes. Thus, this information can be used to define the positive ($w^+$) or the negative weight ($w^-$) of the corresponding edges to be bigger than 1 in the prior constraints of the LP method. \\
 If there is additionally a confidence score given for the edge, this can be taken into account by defining the second element in the prior knowledge list accordingly.
 Assuming that the edge between node 1 and node 2 has a confidence score of 0.9, this translates into:
 <<prior3, results=hide>>=
@@ -215,6 +215,28 @@ res5 <- doILP(obs, delta, lambda=1, b, n, K, T_=NULL,
 adja5 <- getAdja(res5, n)
 @
 
+Considering a small example based on KEGG where we 1) load a network from KEGG, 2) include non-null edges as prior knowledge, and 3) solve the LP problem:
+<<prior4, results=hide>>=
+library("KEGGgraph")
+
+toyKGML <- system.file("extdata/kgml-ed-toy.xml", package="KEGGgraph")
+toyGraph <- parseKGML2Graph(toyKGML, genesOnly=FALSE)
+adja <- as(toyGraph,"matrix")
+entries <- which(adja!=0, arr.ind=TRUE)
+
+### use apply to set the prior from a given adjacency matrix
+myFun <- function(el, sign, confidence, rhs) {
+  prior <- c(sprintf("w+_%s_%s", el[[1]][1], el[[1]][2], 
+             adja[el[[1]][1],el[[1]][2]]), confidence, sign, rhs) 
+}
+prior <- lapply(apply(entries,1,list), myFun, ">", 1, 1)
+
+res5 <- doILP(obs, delta, lambda=1, b, n, K, T_=NULL, 
+              annot=getEdgeAnnot(n), delta_type, 
+              prior=prior)
+              
+adja5 <- getAdja(res5, n)
+@
 
 % \section{Example on Real Data}\label{sachs}
 \section{Example on Real Data}\label{sahin}

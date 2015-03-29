@@ -9,10 +9,12 @@ Calculate Predicted Observation.
 Calculate the predicted observation of a perturbation experiment. If observations of an experiment are missing this function can be used to determine for a given network the predicted outcome. The missing measurement is predicted from two normal distributions, one for observations coming from active and one coming from inactive genes. The state of the gene is predicted based on the states of its parents.
 }
 \usage{
-calcPredictionLOOCV(obs, delta, b, n ,K, adja, baseline, rem_gene, rem_k, rem_t=NULL, active_mu,
-                    active_sd, inactive_mu, inactive_sd, mu_type, flag_time_series=FALSE)
-calcPredictionKfoldCV(obs, delta, b, n, K, adja, baseline, rem_entries=NULL, rem_entries_vec=NULL,
-                      active_mu, active_sd, inactive_mu, inactive_sd, mu_type, flag_time_series=FALSE)
+calcPredictionLOOCV(obs, delta, b, n ,K, adja, baseline, rem_gene, 
+                    rem_k, rem_t=NULL, active_mu, active_sd, inactive_mu, 
+                    inactive_sd, mu_type, flag_time_series=FALSE)
+calcPredictionKfoldCV(obs, delta, b, n, K, adja, baseline, rem_entries=NULL,
+                      rem_entries_vec=NULL, active_mu, active_sd, inactive_mu, 
+                      inactive_sd, mu_type, flag_time_series=FALSE)
 }
 
 %- maybe also 'usage' for other objects documented here.

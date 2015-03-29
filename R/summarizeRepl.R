@@ -1,4 +1,4 @@
-summarizeRepl <- function(data,type=median){
+summarizeRepl <- function(data, type=median) {
 
   annot <- unique(rownames(data))
   dat <- matrix(NA, ncol=dim(data)[2], nrow=length(annot))

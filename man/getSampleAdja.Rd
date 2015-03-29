@@ -9,7 +9,8 @@ Get The Sample Adjacency.
 The function computes the adjacency of the edges computed in each step of the "loocv" or the "kfoldCV" function. If the variance of each edge shall be taken into account use "getSampleAdjaMAD", otherwise "getSampleAdja".
 }
 \usage{
-getSampleAdjaMAD(edges_all, n, annot_node, method = median, method2 = mad, septype = "->")
+getSampleAdjaMAD(edges_all, n, annot_node, method = median,
+                 method2 = mad, septype = "->")
 getSampleAdja(edges_all, n, annot_node, method = median, septype = "->")
 }
 %- maybe also 'usage' for other objects documented here.

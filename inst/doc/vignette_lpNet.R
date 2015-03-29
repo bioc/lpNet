@@ -92,13 +92,13 @@ adja_loocv <- getSampleAdjaMAD(loocv_res$edges_all, n,
 ###################################################
 lambda <- calcRangeLambda(obs, delta, delta_type)
 MSE <- Inf
-for(lamd in lambda){
+for (lamd in lambda) {
   loocv_res <- loocv(kfold=NULL, times, obs, delta, lambda=lamd, 
                      b, n, K, T_=NULL, annot=getEdgeAnnot(n), 
                      annot_node, active_mu, active_sd, 
                      inactive_mu, inactive_sd, mu_type, 
                      delta_type)
-  if(loocv_res$MSE<MSE){
+  if (loocv_res$MSE < MSE) {
 		MSE <- loocv_res$MSE
 		edges_all <- loocv_res$edges_all
 		bestLambda <- lamd
@@ -112,13 +112,13 @@ adja_bestLambda <- getSampleAdjaMAD(edges_all, n, annot_node)
 ###################################################
 kfold <- 5
 MSE <- Inf
-for(lamd in lambda){
+for (lamd in lambda) {
   kcv_res <- kfoldCV(kfold, times, obs, delta, lambda=lamd, 
                      b, n, K, T_=NULL, annot=getEdgeAnnot(n),
                      annot_node, active_mu, active_sd, 
                      inactive_mu, inactive_sd, mu_type, 
                      delta_type)
-  if(kcv_res$MSE<MSE){
+  if (kcv_res$MSE < MSE) {
 		MSE <- kcv_res$MSE
 		edges_all <- kcv_res$edges_all
 		bestLambda <- lamd
@@ -159,7 +159,31 @@ adja5 <- getAdja(res5, n)
 
 
 ###################################################
-### code chunk number 15: sahinData
+### code chunk number 15: prior4
+###################################################
+library("KEGGgraph")
+
+toyKGML <- system.file("extdata/kgml-ed-toy.xml", package="KEGGgraph")
+toyGraph <- parseKGML2Graph(toyKGML, genesOnly=FALSE)
+adja <- as(toyGraph,"matrix")
+entries <- which(adja!=0, arr.ind=TRUE)
+
+### use apply to set the prior from a given adjacency matrix
+myFun <- function(el, sign, confidence, rhs) {
+  prior <- c(sprintf("w+_%s_%s", el[[1]][1], el[[1]][2], 
+             adja[el[[1]][1],el[[1]][2]]), confidence, sign, rhs) 
+}
+prior <- lapply(apply(entries,1,list), myFun, ">", 1, 1)
+
+res5 <- doILP(obs, delta, lambda=1, b, n, K, T_=NULL, 
+              annot=getEdgeAnnot(n), delta_type, 
+              prior=prior)
+              
+adja5 <- getAdja(res5, n)
+
+
+###################################################
+### code chunk number 16: sahinData
 ###################################################
 data("SahinRNAi2008")
 dataStim <- dat.normalized[dat.normalized[ ,17] == 1,-17]
@@ -170,7 +194,7 @@ dataUnst <- t(summarizeRepl(dataUnstim, type=mean))
 
 
 ###################################################
-### code chunk number 16: sahinData_parameter
+### code chunk number 17: sahinData_parameter
 ###################################################
 n <- 16 # number of genes
 K <- 16 # number of experiments
@@ -195,14 +219,14 @@ b <- c(0,rep(1,15),          # erbb1
 
 
 ###################################################
-### code chunk number 17: sahinData_delta
+### code chunk number 18: sahinData_delta
 ###################################################
 delta <- as.double(dataUnst[ ,1])
 delta[11:16] <- mean(dataUnst[ ,1], na.rm=T)
 
 
 ###################################################
-### code chunk number 18: sahinData_lp
+### code chunk number 19: sahinData_lp
 ###################################################
 resERBB <- doILP(dataSt[ ,-1], delta, lambda=1.83, 
                  b, n, K, T_=NULL, annot, 

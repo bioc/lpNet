@@ -39,7 +39,7 @@ test.doILPShortExamplePerGene <- function() {
 	delta_type <- "perGene"
 	
 	res <- doILP(obs_mat, delta, lambda, b, n, K, T_=NULL, annot, delta_type, prior=NULL, sourceNode=NULL, sinkNode=NULL, all.int=FALSE, all.pos=FALSE)
-	
+
 	checkEquals(true_result_objval, res$objval, tolerance=0.00001)
 	checkEquals(true_result_solution, res$solution, tolerance=0.00001)
 }

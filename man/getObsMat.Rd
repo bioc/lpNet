@@ -9,7 +9,8 @@ The function generates the observation matrix where active/inactive observations
  
 }
 \usage{
-getObsMat(act_mat=NULL, net_states=NULL, active_mu, active_sd, inactive_mu, inactive_sd, mu_type)
+getObsMat(act_mat=NULL, net_states=NULL, active_mu, active_sd, 
+          inactive_mu, inactive_sd, mu_type)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
