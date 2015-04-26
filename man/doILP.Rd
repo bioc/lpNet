@@ -10,7 +10,7 @@ This function converts observation data into a linear programming problem.
 \usage{
 doILP(obs, delta, lambda, b, n, K, T_=NULL, annot, delta_type, 
       prior=NULL,sourceNode=NULL, sinkNode=NULL, all.int=FALSE, 
-      all.pos=FALSE, flag_ss_v2=FALSE, flag_time_series=FALSE)
+      all.pos=FALSE, flag_time_series=FALSE)
 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -63,9 +63,6 @@ Logical: should all variables be positive? Corresponds to learning only activati
 }
   \item{flag_time_series}{
   Logical: specifies whether steady-state (FALSE) or time series data (TRUE) is used.  
-}
-  \item{flag_ss_v2}{
-  Logical: if steady-state data is used, specifies whether inactive nodes should contribute to their children activity (FALSE) or not (TRUE).
 }
 }
 

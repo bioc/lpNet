@@ -12,13 +12,12 @@ Performs a stratified k-fold cross-validation or a Leave-One-Out cross-validatio
 loocv(kfold=NULL, times, obs, delta, lambda, b, n, K, T_=NULL, 
       annot, annot_node, active_mu, active_sd, inactive_mu, 
       inactive_sd, mu_type, delta_type, prior=NULL, sourceNode=NULL, 
-      sinkNode=NULL, allint=FALSE, allpos=FALSE, flag_ss_v2=FALSE, 
-      flag_time_series=FALSE)
+      sinkNode=NULL, allint=FALSE, allpos=FALSE, flag_time_series=FALSE)
 kfoldCV(kfold, times, obs, delta, lambda, b, n, K, T_=NULL, 
         annot, annot_node, active_mu, active_sd, inactive_mu, 
         inactive_sd, mu_type, delta_type, prior=NULL,
 				sourceNode=NULL, sinkNode=NULL, allint=FALSE, 
-        allpos=FALSE, flag_ss_v2=FALSE, flag_time_series=FALSE)
+        allpos=FALSE, flag_time_series=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -103,9 +102,6 @@ Logical: should all variables be positive? Corresponds to learning only activati
 }
   \item{flag_time_series}{
   Logical: specifies whether steady-state (FALSE) or time series data (TRUE) is used.  
-}
-  \item{flag_ss_v2}{
-  Logical: if steady-state data is used, specifies whether inactive nodes should contribute to their children activity (FALSE) or not (TRUE).
 }
 }
 

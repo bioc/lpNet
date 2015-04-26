@@ -3,13 +3,12 @@
 #
 kfoldCV <- function(kfold, times, obs, delta, lambda, b, n, K, T_=NULL, annot, annot_node, active_mu,
 										active_sd, inactive_mu, inactive_sd, mu_type, delta_type, prior=NULL,
-										sourceNode=NULL, sinkNode=NULL, allint=FALSE, allpos=FALSE, flag_ss_v2=FALSE, 
-										flag_time_series=FALSE) {
+										sourceNode=NULL, sinkNode=NULL, allint=FALSE, allpos=FALSE, flag_time_series=FALSE) {
 										
 	if (flag_time_series == FALSE) {
 		res <- .kfoldCV_steadyState(kfold, times, obs, delta, lambda, b, n, K, T_, annot, annot_node, active_mu,
 																active_sd, inactive_mu, inactive_sd, mu_type, delta_type, prior,
-																sourceNode, sinkNode, allint, allpos, flag_ss_v2)
+																sourceNode, sinkNode, allint, allpos)
 	}
 	else {
 		res <- .kfoldCV_timeSeries(kfold, times, obs, delta, lambda, b, n, K, T_, annot, annot_node, active_mu, 
@@ -23,15 +22,7 @@ kfoldCV <- function(kfold, times, obs, delta, lambda, b, n, K, T_=NULL, annot, a
 
 .kfoldCV_steadyState <- function(kfold, times, obs, delta, lambda, b, n, K, T_=NULL, annot, annot_node,
 																 active_mu, active_sd, inactive_mu, inactive_sd, mu_type, delta_type,
-																 prior=NULL, sourceNode=NULL, sinkNode=NULL, allint=FALSE, allpos=FALSE,
-																 flag_ss_v2=FALSE) {
-
-	if (flag_ss_v2 == TRUE) {
-		doILP_ss <- get(".doILP_steadyStateV2")
-	}
-	else {
-		doILP_ss <- get(".doILP_steadyState")
-	}
+																 prior=NULL, sourceNode=NULL, sinkNode=NULL, allint=FALSE, allpos=FALSE) {
 	
   obs_kfold <- list()
   num <- dim(obs)[1] * dim(obs)[2]
@@ -76,9 +67,9 @@ kfoldCV <- function(kfold, times, obs, delta, lambda, b, n, K, T_=NULL, annot, a
 			obs_modified <- train_data
 			
 			## do ILP
-			res <- doILP_ss(obs=obs_modified, delta=delta, lambda=lambda, b=b, n=n, K=K, T_=T_, annot=annot, 
-											 delta_type=delta_type,prior=prior, sourceNode=sourceNode, sinkNode=sinkNode, 
-											 all.int=allint, all.pos=allpos)
+			res <- .doILP_steadyState(obs=obs_modified, delta=delta, lambda=lambda, b=b, n=n, K=K, T_=T_, annot=annot, 
+																delta_type=delta_type,prior=prior, sourceNode=sourceNode, sinkNode=sinkNode, 
+																all.int=allint, all.pos=allpos)
 		
 			adja <- getAdja(res=res,n=n)
 			baseline <- getBaseline(res=res,n=n)
