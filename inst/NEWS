@@ -2,3 +2,4 @@
 17/12/2014 updated the doILP functions, allowing for faster run times
 29/03/2015 updated vignette to include prior data from KEGG, and added a new variation of doILP_steadyState
 26/04/2015 removed the new variation of doILP_steadyState, it didn't lead to significantly better results
+04/07/2015 updated Maintainer of the package to be Lars Kaderali
