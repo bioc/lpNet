@@ -1,7 +1,7 @@
 Package: lpNet
 Type: Package
 Title: Linear Programming Model for Network Inference
-Version: 2.21.2
+Version: 2.22.0
 Date: 2020-10199
 Author: Bettina Knapp, Marta R. A. Matos, Johanna Mazur, Lars Kaderali
 Maintainer: Lars Kaderali <lars.kaderali@uni-greifswald.de>
