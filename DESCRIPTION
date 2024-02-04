@@ -1,11 +1,12 @@
 Package: lpNet
 Type: Package
 Title: Linear Programming Model for Network Inference
-Version: 2.34.0
+Version: 2.34.1
 Date: 2020-10199
 Author: Bettina Knapp, Marta R. A. Matos, Johanna Mazur, Lars Kaderali
 Maintainer: Lars Kaderali <lars.kaderali@uni-greifswald.de>
 Depends: lpSolve
+Suggests: KEGGgraph
 Description: lpNet aims at infering biological networks, in particular signaling and gene networks.
 						 For that it takes perturbation data, either steady-state or time-series, 
 						 as input and generates an LP model which allows the inference of signaling networks. 
